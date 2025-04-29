@@ -28,7 +28,11 @@ const PhoneLoginForm: React.FC<PhoneLoginFormProps> = ({
           value={phone}
           onChange={onPhoneChange}
           required
+          className="text-base"
         />
+        <p className="text-xs text-muted-foreground">
+          Enter your phone number with country code
+        </p>
       </div>
       <Button 
         onClick={onSendOtp} 

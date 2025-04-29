@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,60 @@ const Contact: React.FC = () => {
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Initialize Google Maps
+    const initMap = () => {
+      const google = window.google;
+      if (!google || !mapRef.current) return;
+      
+      // Coordinates for Deccan Gymkhana, Pune
+      const location = { lat: 18.5195, lng: 73.8374 };
+      
+      const map = new google.maps.Map(mapRef.current, {
+        zoom: 15,
+        center: location,
+        mapTypeControl: false,
+      });
+      
+      new google.maps.Marker({
+        position: location,
+        map: map,
+        title: "ArtVista Gallery",
+      });
+    };
+
+    // Load Google Maps API
+    const loadGoogleMapsApi = () => {
+      if (!window.google || !window.google.maps) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        window.initMap = initMap;
+        document.head.appendChild(script);
+      } else {
+        initMap();
+      }
+    };
+
+    // For demo purposes, we'll use a timeout to simulate the map loading
+    // In a real application, you would use the above loadGoogleMapsApi function
+    const simulateMapLoading = () => {
+      if (mapRef.current) {
+        mapRef.current.innerHTML = `
+          <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+            <img src="https://maps.googleapis.com/maps/api/staticmap?center=Deccan+Gymkhana,Pune,MH&zoom=15&size=600x400&maptype=roadmap&markers=color:red%7CDeccan+Gymkhana,Pune,MH&key=YOUR_API_KEY" 
+                 alt="Map of Deccan Gymkhana, Pune" 
+                 class="max-w-full max-h-full object-cover" />
+          </div>
+        `;
+      }
+    };
+
+    simulateMapLoading();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,9 +163,8 @@ const Contact: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="text-lg font-medium mb-1">Address</h3>
-                      <p className="text-muted-foreground">123 Art Avenue</p>
-                      <p className="text-muted-foreground">Creative District</p>
-                      <p className="text-muted-foreground">CA 90210</p>
+                      <p className="text-muted-foreground">Deccan Gymkhana</p>
+                      <p className="text-muted-foreground">Pune, MH</p>
                     </div>
                   </div>
                 </div>
@@ -201,13 +254,11 @@ const Contact: React.FC = () => {
           </div>
         </section>
         
-        {/* Map Section (placeholder) */}
+        {/* Map Section */}
         <section className="section bg-muted/30">
           <div className="container-custom">
-            <div className="bg-zinc-200 dark:bg-zinc-800 h-[400px] rounded-lg flex items-center justify-center">
-              <p className="text-muted-foreground">
-                Map placeholder - would integrate with Google Maps or similar service
-              </p>
+            <div ref={mapRef} className="h-[400px] rounded-lg overflow-hidden">
+              {/* Map will be rendered here */}
             </div>
           </div>
         </section>

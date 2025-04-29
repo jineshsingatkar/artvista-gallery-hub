@@ -17,7 +17,7 @@ const RoleSelectorForGoogle: React.FC<RoleSelectorProps> = ({
     <div className="space-y-2">
       <Label htmlFor="role-google">I am a</Label>
       <Select value={role} onValueChange={onRoleChange}>
-        <SelectTrigger id="role-google">
+        <SelectTrigger id="role-google" className="w-full">
           <SelectValue placeholder="Select role" />
         </SelectTrigger>
         <SelectContent>
@@ -26,6 +26,9 @@ const RoleSelectorForGoogle: React.FC<RoleSelectorProps> = ({
           <SelectItem value="admin">Admin</SelectItem>
         </SelectContent>
       </Select>
+      <p className="text-xs text-muted-foreground">
+        Select your role to customize your experience
+      </p>
     </div>
   );
 };
