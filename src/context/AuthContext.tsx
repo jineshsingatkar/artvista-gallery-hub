@@ -8,10 +8,10 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (emailOrPhone: string, passwordOrOtp: string) => Promise<void>;
   loginWithPhone: (phone: string, otp: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
-  signup: (name: string, email: string, password: string, role?: Role) => Promise<void>;
+  signup: (name: string, emailOrPhone: string, passwordOrOtp: string, role?: Role) => Promise<void>;
   signupWithPhone: (name: string, phone: string, role?: Role) => Promise<void>;
   logout: () => void;
   sendOtp: (phone: string) => Promise<void>;
@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (emailOrPhone: string, passwordOrOtp: string) => {
     setIsLoading(true);
     try {
       // Simulate API call delay
@@ -48,10 +48,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Find user with matching email (mock auth)
       // In a real app, this would be a backend API call
-      const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      const foundUser = users.find(u => u.email.toLowerCase() === emailOrPhone.toLowerCase() || u.phone === emailOrPhone);
       
       if (!foundUser) {
-        throw new Error("Invalid email or password");
+        throw new Error("Invalid credentials");
       }
       
       // In a real app, we would verify the password here
@@ -161,15 +161,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (name: string, email: string, password: string, role: Role = "user") => {
+  const signup = async (name: string, emailOrPhone: string, passwordOrOtp: string, role: Role = "user") => {
     setIsLoading(true);
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Check if email already exists (mock validation)
-      if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
-        throw new Error("Email already in use");
+      if (users.some(u => u.email.toLowerCase() === emailOrPhone.toLowerCase() || u.phone === emailOrPhone)) {
+        throw new Error("Email or phone already in use");
       }
       
       // Create new user (mock user creation)
@@ -177,7 +177,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const newUser: User = {
         id: `user_${Date.now()}`,
         name,
-        email,
+        email: emailOrPhone.includes('@') ? emailOrPhone : `${emailOrPhone}@placeholder.com`,
+        phone: emailOrPhone.includes('@') ? undefined : emailOrPhone,
         role,
         createdAt: new Date(),
       };

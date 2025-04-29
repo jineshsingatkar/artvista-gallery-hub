@@ -8,6 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 
+// Add type declaration for window.google
+declare global {
+  interface Window {
+    google: any;
+    initMap: () => void;
+  }
+}
+
 const Contact: React.FC = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,50 +26,15 @@ const Contact: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Initialize Google Maps
-    const initMap = () => {
-      const google = window.google;
-      if (!google || !mapRef.current) return;
-      
-      // Coordinates for Deccan Gymkhana, Pune
-      const location = { lat: 18.5195, lng: 73.8374 };
-      
-      const map = new google.maps.Map(mapRef.current, {
-        zoom: 15,
-        center: location,
-        mapTypeControl: false,
-      });
-      
-      new google.maps.Marker({
-        position: location,
-        map: map,
-        title: "ArtVista Gallery",
-      });
-    };
-
-    // Load Google Maps API
-    const loadGoogleMapsApi = () => {
-      if (!window.google || !window.google.maps) {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-        window.initMap = initMap;
-        document.head.appendChild(script);
-      } else {
-        initMap();
-      }
-    };
-
-    // For demo purposes, we'll use a timeout to simulate the map loading
-    // In a real application, you would use the above loadGoogleMapsApi function
+    // For demo purposes, we'll use a static map image
     const simulateMapLoading = () => {
       if (mapRef.current) {
         mapRef.current.innerHTML = `
           <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-            <img src="https://maps.googleapis.com/maps/api/staticmap?center=Deccan+Gymkhana,Pune,MH&zoom=15&size=600x400&maptype=roadmap&markers=color:red%7CDeccan+Gymkhana,Pune,MH&key=YOUR_API_KEY" 
-                 alt="Map of Deccan Gymkhana, Pune" 
-                 class="max-w-full max-h-full object-cover" />
+            <div class="text-center">
+              <p class="mb-2">Map of Deccan Gymkhana, Pune, MH</p>
+              <p class="text-xs text-gray-500">(Static map for demonstration purposes)</p>
+            </div>
           </div>
         `;
       }

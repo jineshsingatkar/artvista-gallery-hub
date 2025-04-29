@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
-import { AuthMethodSelector } from "@/components/auth/AuthMethodSelector";
+import AuthMethodSelector from "@/components/auth/AuthMethodSelector";
 import EmailLoginForm from "@/components/auth/EmailLoginForm";
 import EmailSignupForm from "@/components/auth/EmailSignupForm";
 import PhoneLoginForm from "@/components/auth/PhoneLoginForm";
 import PhoneSignupForm from "@/components/auth/PhoneSignupForm";
-import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
-import { OtpVerificationDialog } from "@/components/auth/OtpVerificationDialog";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import OtpVerificationDialog from "@/components/auth/OtpVerificationDialog";
 import RoleSelectorForGoogle from "@/components/auth/RoleSelectorForGoogle";
 import { Role } from "@/types";
 import Navbar from "@/components/layout/Navbar";
@@ -39,7 +39,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isOtpDialogOpen, setIsOtpDialogOpen] = useState(false);
   const [sentToContact, setSentToContact] = useState("");
-  const { login, signup, googleAuth } = useAuth();
+  const [otp, setOtp] = useState("");
+  const { login, signup, loginWithGoogle } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -58,7 +59,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
     setIsLoading(true);
 
     try {
-      await login({ email, password });
+      await login(email, password);
       toast({
         title: "Login successful!",
         description: "Welcome back to ArtVista.",
@@ -88,7 +89,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
     setIsLoading(true);
     try {
-      await signup({ email, password, name, role });
+      await signup(name, email, password, role);
       toast({
         title: "Account created!",
         description: "Welcome to ArtVista.",
@@ -135,9 +136,9 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
       // Simulate login or signup based on current tab
       if (tab === "login") {
-        await login({ phone });
+        await login(phone, otp);
       } else {
-        await signup({ phone, name, role });
+        await signup(name, phone, otp, role);
       }
 
       setIsOtpDialogOpen(false);
@@ -159,7 +160,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleGoogleAuth = async () => {
     try {
-      await googleAuth(role);
+      await loginWithGoogle();
       toast({
         title: "Authentication successful!",
         description: "Welcome to ArtVista.",
@@ -227,7 +228,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 <TabsTrigger value="signup">Sign up</TabsTrigger>
               </TabsList>
 
-              <AuthMethodSelector value={method} onValueChange={(value) => setMethod(value as any)} />
+              <AuthMethodSelector value={method} onChange={setMethod} id="auth-method" />
 
               <TabsContent value="login">
                 {method === "email" && (
@@ -253,7 +254,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 {method === "google" && (
                   <div className="space-y-4">
                     {showRoleSelector && <RoleSelectorForGoogle role={role} onRoleChange={setRole} />}
-                    <GoogleAuthButton onClick={handleGoogleAuth} />
+                    <GoogleAuthButton onGoogleAuth={handleGoogleAuth} isLoading={isLoading} />
                   </div>
                 )}
               </TabsContent>
@@ -294,7 +295,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 {method === "google" && (
                   <div className="space-y-4">
                     {showRoleSelector && <RoleSelectorForGoogle role={role} onRoleChange={setRole} />}
-                    <GoogleAuthButton onClick={handleGoogleAuth} />
+                    <GoogleAuthButton onGoogleAuth={handleGoogleAuth} isLoading={isLoading} />
                   </div>
                 )}
               </TabsContent>
@@ -319,10 +320,13 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
       <OtpVerificationDialog
         open={isOtpDialogOpen}
-        onClose={() => setIsOtpDialogOpen(false)}
-        onVerify={handleVerifyOtp}
+        onOpenChange={setIsOtpDialogOpen}
+        phoneNumber={phone}
+        otp={otp}
+        onOtpChange={setOtp}
+        onVerify={() => handleVerifyOtp(otp)}
+        onResend={handleSendOtp}
         isLoading={isLoading}
-        sentTo={sentToContact}
       />
     </div>
   );
