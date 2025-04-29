@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -32,18 +31,15 @@ import { categories, artworks, orders, inquiries } from "@/data/mockData";
 import { formatCurrency, formatDate, getInitials } from "@/lib/utils";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ArtUploadForm from "@/components/forms/ArtUploadForm";
+import { useArtManagement } from "@/hooks/useArtManagement";
 
 const ArtistDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const [newArtTitle, setNewArtTitle] = useState("");
-  const [newArtDescription, setNewArtDescription] = useState("");
-  const [newArtPrice, setNewArtPrice] = useState("");
-  const [newArtCategory, setNewArtCategory] = useState("");
-  const [newArtForSale, setNewArtForSale] = useState(true);
-  const [newArtImage, setNewArtImage] = useState<File | null>(null);
+  const { uploadArtwork, updateArtworkStatus } = useArtManagement();
+  
   const [artDialogOpen, setArtDialogOpen] = useState(false);
 
   // Filter artist-specific data
@@ -51,28 +47,18 @@ const ArtistDashboard: React.FC = () => {
   const artistOrders = orders.filter(order => order.artistId === user?.id);
   const artistInquiries = inquiries.filter(inquiry => inquiry.artistId === user?.id);
 
-  const handleAddArtwork = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would add the artwork to the database
-    toast({
-      title: "Artwork Added",
-      description: `"${newArtTitle}" has been added to your portfolio.`,
-    });
-    setArtDialogOpen(false);
-    // Reset form
-    setNewArtTitle("");
-    setNewArtDescription("");
-    setNewArtPrice("");
-    setNewArtCategory("");
-    setNewArtForSale(true);
-    setNewArtImage(null);
-  };
-
   const handleResponseToInquiry = (inquiryId: string) => {
     // In a real app, this would send a response to the inquiry
     toast({
       title: "Response Sent",
       description: "Your response has been sent to the customer.",
+    });
+  };
+
+  const handleMarkOrderStatus = (orderId: string, status: 'shipped' | 'delivered') => {
+    toast({
+      title: "Order Updated",
+      description: `Order #${orderId} has been marked as ${status}.`,
     });
   };
 
@@ -150,112 +136,8 @@ const ArtistDashboard: React.FC = () => {
                   <DialogTrigger asChild>
                     <Button className="w-full">Add New Artwork</Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[500px]">
-                    <form onSubmit={handleAddArtwork}>
-                      <DialogHeader>
-                        <DialogTitle>Add New Artwork</DialogTitle>
-                        <DialogDescription>
-                          Fill out the details below to add a new artwork to your portfolio.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="art-title" className="text-right">
-                            Title
-                          </Label>
-                          <Input
-                            id="art-title"
-                            value={newArtTitle}
-                            onChange={(e) => setNewArtTitle(e.target.value)}
-                            className="col-span-3"
-                            required
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="art-description" className="text-right">
-                            Description
-                          </Label>
-                          <Textarea
-                            id="art-description"
-                            value={newArtDescription}
-                            onChange={(e) => setNewArtDescription(e.target.value)}
-                            className="col-span-3"
-                            required
-                          />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="art-category" className="text-right">
-                            Category
-                          </Label>
-                          <Select 
-                            value={newArtCategory} 
-                            onValueChange={setNewArtCategory}
-                            required
-                          >
-                            <SelectTrigger id="art-category" className="col-span-3">
-                              <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {categories.map(category => (
-                                <SelectItem key={category.id} value={category.name}>
-                                  {category.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label className="text-right">
-                            For Sale
-                          </Label>
-                          <div className="flex items-center space-x-2 col-span-3">
-                            <Switch 
-                              id="art-for-sale"
-                              checked={newArtForSale}
-                              onCheckedChange={setNewArtForSale}
-                            />
-                            <Label htmlFor="art-for-sale">
-                              {newArtForSale ? "Yes" : "No (Inquiry Only)"}
-                            </Label>
-                          </div>
-                        </div>
-                        {newArtForSale && (
-                          <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="art-price" className="text-right">
-                              Price ($)
-                            </Label>
-                            <Input
-                              id="art-price"
-                              type="number"
-                              min="0"
-                              value={newArtPrice}
-                              onChange={(e) => setNewArtPrice(e.target.value)}
-                              className="col-span-3"
-                              required={newArtForSale}
-                            />
-                          </div>
-                        )}
-                        <div className="grid grid-cols-4 items-center gap-4">
-                          <Label htmlFor="art-image" className="text-right">
-                            Image
-                          </Label>
-                          <Input
-                            id="art-image"
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) setNewArtImage(file);
-                            }}
-                            className="col-span-3 cursor-pointer"
-                            required
-                          />
-                        </div>
-                      </div>
-                      <DialogFooter>
-                        <Button type="submit">Add Artwork</Button>
-                      </DialogFooter>
-                    </form>
+                  <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+                    <ArtUploadForm onArtworkAdded={() => setArtDialogOpen(false)} />
                   </DialogContent>
                 </Dialog>
               </div>
@@ -394,14 +276,7 @@ const ArtistDashboard: React.FC = () => {
                     <CardContent className="pt-6">
                       <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-semibold">My Artworks</h3>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button>Add New Artwork</Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[500px]">
-                            {/* Same form as above */}
-                          </DialogContent>
-                        </Dialog>
+                        <Button onClick={() => setArtDialogOpen(true)}>Add New Artwork</Button>
                       </div>
 
                       {artistArtworks.length > 0 ? (
@@ -520,10 +395,14 @@ const ArtistDashboard: React.FC = () => {
                               <div className="flex flex-wrap gap-2">
                                 <Button variant="outline" size="sm">View Full Details</Button>
                                 {order.status === 'pending' && (
-                                  <Button size="sm">Mark as Shipped</Button>
+                                  <Button size="sm" onClick={() => handleMarkOrderStatus(order.id, 'shipped')}>
+                                    Mark as Shipped
+                                  </Button>
                                 )}
                                 {order.status === 'shipped' && (
-                                  <Button size="sm">Mark as Delivered</Button>
+                                  <Button size="sm" onClick={() => handleMarkOrderStatus(order.id, 'delivered')}>
+                                    Mark as Delivered
+                                  </Button>
                                 )}
                                 <Button variant="outline" size="sm">Contact Customer</Button>
                               </div>

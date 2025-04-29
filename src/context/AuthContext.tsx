@@ -31,6 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
+        // Ensure createdAt is a valid Date object
+        parsedUser.createdAt = new Date(parsedUser.createdAt);
         setUser(parsedUser);
       } catch (error) {
         console.error("Failed to parse stored user:", error);
@@ -173,7 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       // Create new user (mock user creation)
-      // In a real app, this would be a backend API call
       const newUser: User = {
         id: `user_${Date.now()}`,
         name,
